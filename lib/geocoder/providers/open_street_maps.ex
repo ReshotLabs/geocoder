@@ -103,17 +103,23 @@ defmodule Geocoder.Providers.OpenStreetMaps do
     %{coords | bounds: bounds, location: location}
   end
 
-  defp geocode_coords(%{"lat" => lat, "lon" => lon}) do
+  defp geocode_coords(%{"lat" => lat, "lon" => lon}) when is_binary(lat) and is_binary(lon) do
     [lat, lon] = [lat, lon] |> Enum.map(&elem(Float.parse(&1), 0))
     %Geocoder.Coords{lat: lat, lon: lon}
   end
 
+  defp geocode_coords(%{"lat" => lat, "lon" => lon}) when is_float(lat) and is_float(lon),
+    do: %Geocoder.Coords{lat: lat, lon: lon}
+
   defp geocode_coords(_), do: %Geocoder.Coords{}
 
-  defp geocode_bounds(%{"boundingbox" => bbox}) do
+  defp geocode_bounds(%{"boundingbox" => [n, s, w, e] = bbox}) when is_binary(n) and is_binary(s) and is_binary(w) and is_binary(e) do
     [north, south, west, east] = bbox |> Enum.map(&elem(Float.parse(&1), 0))
     %Geocoder.Bounds{top: north, right: east, bottom: south, left: west}
   end
+
+  defp geocode_bounds(%{"boundingbox" => [n, s, w, e]}) when is_float(n) and is_float(s) and is_float(w) and is_float(e),
+    do: %Geocoder.Bounds{top: n, right: e, bottom: s, left: w}
 
   defp geocode_bounds(_), do: %Geocoder.Bounds{}
 
