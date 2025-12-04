@@ -17,6 +17,9 @@ defmodule Geocoder.HttpClient.Httpoison do
         {:ok, %HTTPoison.Response{status_code: 200, body: body, headers: headers}} ->
           {:ok, %{status_code: 200, body: json_codec.decode!(body), headers: headers}}
 
+        {:ok, %HTTPoison.Response{status_code: status_code, body: body, headers: headers}} ->
+          {:error, %{status_code: status_code, body: body, headers: headers}}
+
         {:error, %HTTPoison.Error{} = error} ->
           {:error, error}
       end
